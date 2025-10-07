@@ -60,29 +60,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const updateWalletState = useCallback(async (currentProvider?: ethers.BrowserProvider) => {
-    const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum, MONAD_TESTNET_CHAIN_ID) : null);
-    if (web3Provider) {
-      const network = await web3Provider.getNetwork();
-      if (Number(network.chainId) !== MONAD_TESTNET_CHAIN_ID) {
+    const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+    if (!web3Provider) return;
+    
+    setProvider(web3Provider);
+    const network = await web3Provider.getNetwork();
+    
+    if (Number(network.chainId) !== MONAD_TESTNET_CHAIN_ID) {
         setIsConnected(false);
         setAddress(null);
         setBalance(0);
         return;
-      }
+    }
 
-      setProvider(web3Provider);
-      const accounts = await web3Provider.listAccounts();
-      if (accounts.length > 0) {
-        const signer = accounts[0];
-        setAddress(signer.address);
-        setIsConnected(true);
-        const balance = await web3Provider.getBalance(signer.address);
-        setBalance(parseFloat(ethers.formatEther(balance)));
-      } else {
-        setIsConnected(false);
-        setAddress(null);
-        setBalance(0);
-      }
+    const accounts = await web3Provider.listAccounts();
+    if (accounts.length > 0) {
+      const signer = accounts[0];
+      setAddress(signer.address);
+      setIsConnected(true);
+      const balance = await web3Provider.getBalance(signer.address);
+      setBalance(parseFloat(ethers.formatEther(balance)));
+    } else {
+      setIsConnected(false);
+      setAddress(null);
+      setBalance(0);
     }
   }, []);
 
@@ -92,9 +93,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const switched = await switchToMonadNetwork(window.ethereum);
         if (!switched) return;
         
-        // Pass network details to the provider
-        const web3Provider = new ethers.BrowserProvider(window.ethereum, MONAD_TESTNET_CHAIN_ID);
-        await web3Provider.send('eth_requestAccounts', []);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3Provider = new ethers.BrowserProvider(window.ethereum);
         await updateWalletState(web3Provider);
       } catch (error) {
         console.error('Failed to connect wallet:', error);
@@ -115,14 +115,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   
   useEffect(() => {
     if (window.ethereum) {
-      const web3Provider = new ethers.BrowserProvider(window.ethereum, MONAD_TESTNET_CHAIN_ID);
-      updateWalletState(web3Provider);
+      updateWalletState();
 
-      const handleAccountsChanged = (accounts: string[]) => {
-        updateWalletState(web3Provider);
+      const handleAccountsChanged = () => {
+        updateWalletState();
       };
 
-      const handleChainChanged = (chainId: string) => {
+      const handleChainChanged = () => {
         window.location.reload();
       };
 
