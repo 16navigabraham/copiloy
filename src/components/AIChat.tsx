@@ -40,21 +40,6 @@ export default function AIChat() {
     }
   }, [messages]);
 
-  const parseAction = (text: string): { content: string, action?: SendAction } => {
-    const actionRegex = /\[ACTION:SEND:(\{.*?\})\]/;
-    const match = text.match(actionRegex);
-    if (match && match[1]) {
-      try {
-        const actionPayload = JSON.parse(match[1]);
-        const content = text.replace(actionRegex, '').trim();
-        return { content, action: { type: 'SEND', ...actionPayload } };
-      } catch (e) {
-        console.error('Failed to parse action:', e);
-      }
-    }
-    return { content: text };
-  };
-
   const handleExecuteAction = async (action: SendAction) => {
     toast({
       title: 'Executing Transaction...',
@@ -85,8 +70,7 @@ export default function AIChat() {
     setIsLoading(true);
 
     try {
-      const aiResponseText = await getAiResponse(input, address);
-      const { content, action } = parseAction(aiResponseText);
+      const { content, action } = await getAiResponse(input, address);
       const assistantMessage: Message = { id: Date.now() + 1, role: 'assistant', content, action };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
