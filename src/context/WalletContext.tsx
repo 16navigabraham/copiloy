@@ -39,6 +39,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       });
       return true;
     } catch (switchError: any) {
+      // 4001 is the error code for user rejected request
+      if (switchError.code === 4001) {
+        console.log('User rejected the network switch request.');
+        alert('Please approve the request to switch to the Monad testnet.');
+        return false;
+      }
       if (switchError.code === 4902) { // Chain not added
         try {
           await eth.request({
@@ -60,7 +66,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const updateWalletState = useCallback(async (currentProvider?: ethers.BrowserProvider) => {
-    const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+    const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum, 'any') : null);
     if (!web3Provider) return;
     
     setProvider(web3Provider);
@@ -94,11 +100,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         if (!switched) return;
         
         await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const web3Provider = new ethers.BrowserProvider(window.ethereum);
+        const web3Provider = new ethers.BrowserProvider(window.ethereum, MONAD_TESTNET_CHAIN_ID);
         await updateWalletState(web3Provider);
-      } catch (error) {
-        console.error('Failed to connect wallet:', error);
-        alert('Failed to connect wallet. Please make sure MetaMask is unlocked.');
+      } catch (error: any) {
+        if (error.code === 4001) { // User rejected the connection request
+          console.log('User rejected the connection request.');
+          alert('Please approve the connection request to continue.');
+        } else {
+          console.error('Failed to connect wallet:', error);
+          alert('Failed to connect wallet. Please make sure MetaMask is unlocked.');
+        }
       }
     } else {
       alert('Please install MetaMask!');
