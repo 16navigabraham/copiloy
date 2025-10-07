@@ -39,12 +39,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       });
       return true;
     } catch (switchError: any) {
-      // 4001 is the error code for user rejected request
-      if (switchError.code === 4001) {
-        console.log('User rejected the network switch request.');
-        alert('Please approve the request to switch to the Monad testnet.');
-        return false;
-      }
       if (switchError.code === 4902) { // Chain not added
         try {
           await eth.request({
@@ -54,9 +48,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           return true;
         } catch (addError) {
           console.error('Failed to add Monad testnet:', addError);
-          alert('Failed to add the Monad testnet to your wallet. Please add it manually.');
+          alert('Failed to add the Monad testnet. Please add it manually.');
           return false;
         }
+      } else if (switchError.code === 4001) {
+        console.log('User rejected the network switch request.');
+        alert('Please approve the request to switch to the Monad testnet.');
+        return false;
       } else {
         console.error('Failed to switch to Monad testnet:', switchError);
         alert('Failed to switch to the Monad testnet. Please switch manually in your wallet.');
@@ -67,15 +65,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const updateWalletState = useCallback(async (currentProvider?: ethers.BrowserProvider) => {
     const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum, 'any') : null);
-    if (!web3Provider) return;
+    if (!web3Provider) {
+      disconnectWallet();
+      return;
+    }
     
     setProvider(web3Provider);
     const network = await web3Provider.getNetwork();
     
     if (Number(network.chainId) !== MONAD_TESTNET_CHAIN_ID) {
-        setIsConnected(false);
-        setAddress(null);
-        setBalance(0);
+        disconnectWallet();
         return;
     }
 
@@ -87,9 +86,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const balance = await web3Provider.getBalance(signer.address);
       setBalance(parseFloat(ethers.formatEther(balance)));
     } else {
-      setIsConnected(false);
-      setAddress(null);
-      setBalance(0);
+      disconnectWallet();
     }
   }, []);
 
@@ -99,9 +96,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const switched = await switchToMonadNetwork(window.ethereum);
         if (!switched) return;
         
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const web3Provider = new ethers.BrowserProvider(window.ethereum, MONAD_TESTNET_CHAIN_ID);
-        await updateWalletState(web3Provider);
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts.length > 0) {
+            const web3Provider = new ethers.BrowserProvider(window.ethereum);
+            await updateWalletState(web3Provider);
+        } else {
+            disconnectWallet();
+        }
+
       } catch (error: any) {
         if (error.code === 4001) { // User rejected the connection request
           console.log('User rejected the connection request.');
@@ -121,30 +123,34 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAddress(null);
     setBalance(0);
     setProvider(null);
-    console.log('Wallet disconnected.');
   }, []);
   
   useEffect(() => {
-    if (window.ethereum) {
-      updateWalletState();
+    if (typeof window.ethereum === 'undefined') return;
 
-      const handleAccountsChanged = () => {
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        disconnectWallet();
+      } else {
         updateWalletState();
-      };
+      }
+    };
 
-      const handleChainChanged = () => {
-        window.location.reload();
-      };
+    const handleChainChanged = () => {
+      updateWalletState();
+    };
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
+    // Initial check
+    updateWalletState();
 
-      return () => {
-        window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum?.removeListener('chainChanged', handleChainChanged);
-      };
-    }
-  }, [updateWalletState]);
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
+
+    return () => {
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum?.removeListener('chainChanged', handleChainChanged);
+    };
+  }, [updateWalletState, disconnectWallet]);
 
   const sendTransaction = useCallback(
     async (to: string, amount: number): Promise<boolean> => {
