@@ -56,12 +56,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         alert('Please approve the request to switch to the Monad testnet.');
         return false;
       } else {
-        console.error('Failed to switch to Monad testnet:', switchError);
+        console.error('Failed to switch to Monad testnet:', JSON.stringify(switchError));
         alert('Failed to switch to the Monad testnet. Please switch manually in your wallet.');
         return false;
       }
     }
   };
+
+  const disconnectWallet = useCallback(() => {
+    setIsConnected(false);
+    setAddress(null);
+    setBalance(0);
+    setProvider(null);
+  }, []);
 
   const updateWalletState = useCallback(async (currentProvider?: ethers.BrowserProvider) => {
     const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum, 'any') : null);
@@ -88,7 +95,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } else {
       disconnectWallet();
     }
-  }, []);
+  }, [disconnectWallet]);
 
   const connectWallet = useCallback(async () => {
     if (window.ethereum) {
@@ -98,7 +105,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         if (accounts.length > 0) {
-            const web3Provider = new ethers.BrowserProvider(window.ethereum);
+            const web3Provider = new ethers.BrowserProvider(window.ethereum, MONAD_TESTNET_CHAIN_ID);
             await updateWalletState(web3Provider);
         } else {
             disconnectWallet();
@@ -116,14 +123,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } else {
       alert('Please install MetaMask!');
     }
-  }, [updateWalletState]);
-
-  const disconnectWallet = useCallback(() => {
-    setIsConnected(false);
-    setAddress(null);
-    setBalance(0);
-    setProvider(null);
-  }, []);
+  }, [updateWalletState, disconnectWallet]);
   
   useEffect(() => {
     if (typeof window.ethereum === 'undefined') return;
