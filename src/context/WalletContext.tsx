@@ -1,7 +1,9 @@
+
 'use client';
 
 import { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { MONAD_TESTNET_CONFIG, MONAD_TESTNET_CHAIN_ID } from '@/lib/constants';
 
 interface WalletState {
   isConnected: boolean;
@@ -29,9 +31,45 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState(0);
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
 
+  const switchToMonadNetwork = async (eth: any): Promise<boolean> => {
+    try {
+      await eth.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: MONAD_TESTNET_CONFIG.chainId }],
+      });
+      return true;
+    } catch (switchError: any) {
+      if (switchError.code === 4902) { // Chain not added
+        try {
+          await eth.request({
+            method: 'wallet_addEthereumChain',
+            params: [MONAD_TESTNET_CONFIG],
+          });
+          return true;
+        } catch (addError) {
+          console.error('Failed to add Monad testnet:', addError);
+          alert('Failed to add the Monad testnet to your wallet. Please add it manually.');
+          return false;
+        }
+      } else {
+        console.error('Failed to switch to Monad testnet:', switchError);
+        alert('Failed to switch to the Monad testnet. Please switch manually in your wallet.');
+        return false;
+      }
+    }
+  };
+
   const updateWalletState = useCallback(async (currentProvider?: ethers.BrowserProvider) => {
     const web3Provider = currentProvider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
     if (web3Provider) {
+      const network = await web3Provider.getNetwork();
+      if (Number(network.chainId) !== MONAD_TESTNET_CHAIN_ID) {
+        setIsConnected(false);
+        setAddress(null);
+        setBalance(0);
+        return;
+      }
+
       setProvider(web3Provider);
       const accounts = await web3Provider.listAccounts();
       if (accounts.length > 0) {
@@ -48,40 +86,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    if (window.ethereum) {
-      updateWalletState();
-
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length > 0) {
-          updateWalletState();
-        } else {
-          disconnectWallet();
-        }
-      };
-
-      const handleChainChanged = () => {
-        updateWalletState();
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum?.removeListener('chainChanged', handleChainChanged);
-      };
-    }
-  }, [updateWalletState]);
-
   const connectWallet = useCallback(async () => {
     if (window.ethereum) {
       try {
-        const web3Provider = new ethers.BrowserProvider(window.ethereum);
+        const switched = await switchToMonadNetwork(window.ethereum);
+        if (!switched) return;
+
+        const web3Provider = new ethers.BrowserProvider(window.ethereum, 'any');
         await web3Provider.send('eth_requestAccounts', []);
         await updateWalletState(web3Provider);
       } catch (error) {
         console.error('Failed to connect wallet:', error);
+        alert('Failed to connect wallet. Please make sure MetaMask is unlocked.');
       }
     } else {
       alert('Please install MetaMask!');
@@ -93,9 +109,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAddress(null);
     setBalance(0);
     setProvider(null);
-    // In a real scenario with WalletConnect or other libraries, you'd call their disconnect methods.
     console.log('Wallet disconnected.');
   }, []);
+  
+  useEffect(() => {
+    if (window.ethereum) {
+      const web3Provider = new ethers.BrowserProvider(window.ethereum, 'any');
+      updateWalletState(web3Provider);
+
+      const handleAccountsChanged = (accounts: string[]) => {
+        updateWalletState(web3Provider);
+      };
+
+      const handleChainChanged = (chainId: string) => {
+        updateWalletState(web3Provider);
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum?.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [updateWalletState]);
 
   const sendTransaction = useCallback(
     async (to: string, amount: number): Promise<boolean> => {
