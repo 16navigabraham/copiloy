@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import ConnectWallet from './ConnectWallet';
 import { Zap } from 'lucide-react';
 
 export default function Header() {
@@ -12,7 +11,7 @@ export default function Header() {
           </div>
           <span className="font-bold text-xl font-headline">Portfolio Copilot</span>
         </Link>
-        <ConnectWallet />
+        {/* The ConnectWallet button was here. It's removed to centralize connection on the main page. */}
       </div>
     </header>
   );

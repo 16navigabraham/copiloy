@@ -1,0 +1,18 @@
+diff --git a/node_modules/@metamask/sdk/package.json b/node_modules/@metamask/sdk/package.json
+index 2851a79..34a07e8 100644
+--- a/node_modules/@metamask/sdk/package.json
++++ b/node_modules/@metamask/sdk/package.json
+@@ -96,10 +96,5 @@
+     "react": ">=16.8.0"
+   },
+   "peerDependenciesMeta": {
+-    "react-native": {
+-      "optional": true
+-    },
+-    "react-native-webview": {
+-      "optional": true
+-    }
+   },
+   "resolutions": {
+     "semver": "^7.5.4"
+
