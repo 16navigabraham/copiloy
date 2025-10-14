@@ -10,6 +10,7 @@ import {
   Activity,
   DollarSign,
   Droplets,
+  CheckCircle,
 } from 'lucide-react';
 import type { PortfolioSummary, Transaction } from '@/lib/types';
 import { getPortfolioSummary, getRecentTransactions } from '@/lib/envio';
@@ -72,7 +73,7 @@ function Dashboard({ address }: { address: string }) {
               title="Gas Spent"
               value={`$${summary?.gasSpent.toFixed(2)}`}
               icon={<Droplets className="h-4 w-4 text-muted-foreground" />}
-              description="Mostly gasless with Smart Accounts"
+              description="Gas fees on Monad testnet"
             />
           </>
         )}
@@ -104,7 +105,11 @@ export default function Home() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header>
-        <ConnectWallet onConnected={handleConnected} onDisconnected={handleDisconnected} />
+        <ConnectWallet 
+          onConnected={handleConnected} 
+          onDisconnected={handleDisconnected}
+          address={address}
+        />
       </Header>
       <main className="flex flex-1 flex-col items-center justify-center p-4">
         {address ? (
@@ -118,7 +123,11 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-lg text-muted-foreground mb-8">
                 Connect your wallet to get AI-powered insights into your portfolio, transactions, and spending patterns on the Monad testnet.
               </p>
-              <ConnectWallet onConnected={handleConnected} onDisconnected={handleDisconnected} />
+               <ConnectWallet 
+                  onConnected={handleConnected} 
+                  onDisconnected={handleDisconnected}
+                  address={address}
+                />
           </div>
         )}
       </main>

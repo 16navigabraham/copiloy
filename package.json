@@ -68,6 +68,7 @@
   },
   "overrides": {
     "react": "$react",
+    "@types/react": "$@types/react",
     "i18next": "$i18next"
   }
 }

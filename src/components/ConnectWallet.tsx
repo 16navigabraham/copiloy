@@ -18,22 +18,21 @@ const formatAddress = (address: string) => {
 interface ConnectWalletProps {
   onConnected: (address: string) => void;
   onDisconnected: () => void;
+  address: string | null;
 }
 
-export function ConnectWallet({ onConnected, onDisconnected }: ConnectWalletProps) {
-  const [address, setAddress] = useState<string | null>(null);
+export function ConnectWallet({ onConnected, onDisconnected, address }: ConnectWalletProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Check if already connected on component mount
     const accounts = getAccounts();
-    if (accounts.length > 0) {
+    if (accounts.length > 0 && !address) {
       const firstAccount = accounts[0];
-      setAddress(firstAccount);
       onConnected(firstAccount);
     }
-  }, [onConnected]);
+  }, [onConnected, address]);
 
   const handleConnect = async () => {
     setLoading(true);
@@ -42,7 +41,6 @@ export function ConnectWallet({ onConnected, onDisconnected }: ConnectWalletProp
       const accounts = await connect();
       if (accounts && accounts.length > 0) {
         const firstAccount = accounts[0];
-        setAddress(firstAccount);
         onConnected(firstAccount);
       } else {
         throw new Error("No accounts found after connection.");
@@ -54,10 +52,9 @@ export function ConnectWallet({ onConnected, onDisconnected }: ConnectWalletProp
       setLoading(false);
     }
   };
-
+  
   const handleDisconnect = () => {
     disconnect();
-    setAddress(null);
     onDisconnected();
   }
 
@@ -66,7 +63,7 @@ export function ConnectWallet({ onConnected, onDisconnected }: ConnectWalletProp
       <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            <span className="font-mono">{formatAddress(address)}</span>
+            <span className="font-mono" title={address}>{formatAddress(address)}</span>
           </div>
           <Button variant="outline" size="sm" onClick={handleDisconnect}>
             <LogOut className="mr-2 h-4 w-4"/>

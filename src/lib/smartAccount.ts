@@ -1,9 +1,13 @@
 'use client';
 import { MetaMaskSDK, SDKProvider } from '@metamask/sdk';
 import { BrowserProvider, parseEther } from 'ethers';
+// import { Implementation, toMetaMaskSmartAccount } from "@metamask/delegation-toolkit";
+// import { createPublicClient, createWalletClient, custom, http } from 'viem';
+// import { monad } from 'viem/chains';
 
 let sdk: MetaMaskSDK | undefined;
 let provider: SDKProvider | undefined;
+let smartAccount: any | undefined;
 
 const getMetaMaskSDK = () => {
   if (sdk) {
@@ -52,27 +56,81 @@ export const disconnect = () => {
     sdk?.terminate();
     sdk = undefined;
     provider = undefined;
+    smartAccount = undefined;
 }
 
+// export const createSmartAccount = async () => {
+//   if (!provider) {
+//     throw new Error("Provider not initialized. Please connect your wallet first.");
+//   }
+  
+//   const publicClient = createPublicClient({ 
+//     chain: monad, 
+//     transport: http() 
+//   });
+  
+//   const walletClient = createWalletClient({
+//     chain: monad,
+//     transport: custom(provider)
+//   });
+
+//   const [owner] = await walletClient.getAddresses();
+
+//   const sa = await toMetaMaskSmartAccount({
+//     client: publicClient,
+//     implementation: Implementation.Hybrid,
+//     deployParams: [owner, [], [], []],
+//     deploySalt: "0x",
+//     signer: { walletClient },
+//   });
+
+//   smartAccount = sa;
+//   return sa;
+// }
+
+
+// export async function sendTransaction(to: string, amount: string): Promise<string | null> {
+//   if (!smartAccount) {
+//     console.error("Smart Account not initialized. Please create it first.");
+//     throw new Error("Smart Account not initialized. Please create it first.");
+//   }
+//   try {
+//     const { hash } = await smartAccount.sendTransaction({
+//       to: to as `0x${string}`,
+//       value: parseEther(amount),
+//     });
+//     console.log('Transaction sent:', hash);
+    
+//     const publicClient = createPublicClient({ 
+//       chain: monad, 
+//       transport: http() 
+//     });
+    
+//     const receipt = await publicClient.waitForTransactionReceipt({ hash });
+//     console.log('Transaction receipt:', receipt);
+//     return receipt?.transactionHash ?? null;
+
+//   } catch (error) {
+//     console.error("Transaction failed", error);
+//     return null;
+//   }
+// }
+
 export async function sendTransaction(to: string, amount: string): Promise<string | null> {
-  if (!provider) {
-    console.error("Provider not initialized. Please connect your wallet first.");
-    throw new Error("Provider not initialized. Please connect your wallet first.");
-  }
-  try {
+    if (!provider) {
+        throw new Error("Provider not initialized. Please connect your wallet first.");
+    }
     const ethersProvider = new BrowserProvider(provider);
     const signer = await ethersProvider.getSigner();
-    
-    const tx = await signer.sendTransaction({
-      to,
-      value: parseEther(amount)
-    });
-    console.log('Transaction sent:', tx);
-    const receipt = await tx.wait();
-    console.log('Transaction receipt:', receipt);
-    return receipt?.hash ?? null;
-  } catch (error) {
-    console.error("Transaction failed", error);
-    return null;
-  }
+    try {
+        const tx = await signer.sendTransaction({
+            to,
+            value: parseEther(amount),
+        });
+        const receipt = await tx.wait();
+        return receipt?.hash ?? null;
+    } catch(e) {
+        console.error("Transaction failed", e);
+        return null;
+    }
 }
