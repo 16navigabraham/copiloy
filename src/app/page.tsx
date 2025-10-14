@@ -11,11 +11,11 @@ import {
   DollarSign,
   Droplets,
 } from 'lucide-react';
-import type { PortfolioSummary, Transaction, SendAction } from '@/lib/types';
+import type { PortfolioSummary, Transaction } from '@/lib/types';
 import { getPortfolioSummary, getRecentTransactions } from '@/lib/envio';
 import { sendTransaction } from '@/lib/smartAccount';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ConnectSmartAccount } from '@/components/ConnectSmartAccount';
+import { ConnectWallet } from '@/components/ConnectWallet';
 
 function Dashboard({ address }: { address: string }) {
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
@@ -103,7 +103,9 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <Header />
+      <Header>
+        <ConnectWallet onConnected={handleConnected} onDisconnected={handleDisconnected} />
+      </Header>
       <main className="flex flex-1 flex-col items-center justify-center p-4">
         {address ? (
           <Dashboard address={address} />
@@ -116,7 +118,7 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-lg text-muted-foreground mb-8">
                 Connect your wallet to get AI-powered insights into your portfolio, transactions, and spending patterns on the Monad testnet.
               </p>
-              <ConnectSmartAccount onConnected={handleConnected} onDisconnected={handleDisconnected} />
+              <ConnectWallet onConnected={handleConnected} onDisconnected={handleDisconnected} />
           </div>
         )}
       </main>

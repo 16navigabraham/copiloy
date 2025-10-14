@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
+import { ReactNode } from 'react';
 
-export default function Header() {
+export default function Header({ children }: { children?: ReactNode }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -11,7 +12,7 @@ export default function Header() {
           </div>
           <span className="font-bold text-xl font-headline">Portfolio Copilot</span>
         </Link>
-        {/* The ConnectWallet button was here. It's removed to centralize connection on the main page. */}
+        <div>{children}</div>
       </div>
     </header>
   );
