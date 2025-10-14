@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useWeb3ModalAccount } from '@web3modal/ethers/react';
 import Header from '@/components/Header';
 import PortfolioCard from '@/components/PortfolioCard';
 import TransactionsList from '@/components/TransactionsList';
@@ -10,11 +11,10 @@ import {
   Activity,
   DollarSign,
   Droplets,
-  CheckCircle,
 } from 'lucide-react';
 import type { PortfolioSummary, Transaction } from '@/lib/types';
 import { getPortfolioSummary, getRecentTransactions } from '@/lib/envio';
-import { sendTransaction } from '@/lib/smartAccount';
+import { sendTransaction } from '@/lib/smartAccount'; // This will be unused for now
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConnectWallet } from '@/components/ConnectWallet';
 
@@ -23,7 +23,7 @@ function Dashboard({ address }: { address: string }) {
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useState(() => {
     async function fetchData() {
       if (address) {
         setLoading(true);
@@ -37,7 +37,7 @@ function Dashboard({ address }: { address: string }) {
       }
     }
     fetchData();
-  }, [address]);
+  });
 
   return (
      <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 w-full max-w-7xl mx-auto">
@@ -83,7 +83,7 @@ function Dashboard({ address }: { address: string }) {
           <TransactionsList transactions={transactions} loading={loading} />
         </div>
         <div className="lg:col-span-2">
-          {address && <AIChat address={address} onExecuteAction={sendTransaction} />}
+          {address && <AIChat address={address} onExecuteAction={async (to, amount) => { console.log('Send tx not implemented'); return null; }} />}
         </div>
       </div>
     </div>
@@ -92,27 +92,15 @@ function Dashboard({ address }: { address: string }) {
 
 
 export default function Home() {
-  const [address, setAddress] = useState<string | null>(null);
-
-  const handleConnected = (connectedAddress: string) => {
-    setAddress(connectedAddress);
-  };
-
-  const handleDisconnected = () => {
-    setAddress(null);
-  };
+  const { address, isConnected } = useWeb3ModalAccount();
 
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header>
-        <ConnectWallet 
-          onConnected={handleConnected} 
-          onDisconnected={handleDisconnected}
-          address={address}
-        />
+        <ConnectWallet />
       </Header>
       <main className="flex flex-1 flex-col items-center justify-center p-4">
-        {address ? (
+        {isConnected && address ? (
           <Dashboard address={address} />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center text-center p-4 w-full">
@@ -123,11 +111,7 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-lg text-muted-foreground mb-8">
                 Connect your wallet to get AI-powered insights into your portfolio, transactions, and spending patterns on the Monad testnet.
               </p>
-               <ConnectWallet 
-                  onConnected={handleConnected} 
-                  onDisconnected={handleDisconnected}
-                  address={address}
-                />
+               <ConnectWallet />
           </div>
         )}
       </main>

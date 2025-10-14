@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { modal } from '@/lib/smartAccount'; // Eagerly initialize the modal
 
 export const metadata: Metadata = {
   title: 'Portfolio Copilot',
