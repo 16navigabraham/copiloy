@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, User, Send, Zap, Loader2 } from 'lucide-react';
 import { getAiResponse } from '@/app/actions';
-import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { SendAction } from '@/lib/types';
@@ -19,8 +18,13 @@ interface Message {
   action?: SendAction;
 }
 
-export default function AIChat() {
-  const { address, sendTransaction } = useWallet();
+interface AIChatProps {
+  address: string;
+  onExecuteAction: (to: string, amount: string) => Promise<string | null>;
+}
+
+
+export default function AIChat({ address, onExecuteAction }: AIChatProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -45,11 +49,11 @@ export default function AIChat() {
       title: 'Executing Transaction...',
       description: `Sending ${action.amount} ${action.currency} to ${action.to.substring(0,6)}...`,
     });
-    const success = await sendTransaction(action.to, parseFloat(action.amount));
-    if (success) {
+    const txHash = await onExecuteAction(action.to, action.amount);
+    if (txHash) {
       toast({
         title: '✅ Transaction Successful',
-        description: 'Your gasless transaction was completed via your Smart Account.',
+        description: `Transaction hash: ${txHash.substring(0,10)}...`,
       });
     } else {
       toast({

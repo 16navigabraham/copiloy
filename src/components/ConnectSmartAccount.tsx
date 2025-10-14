@@ -15,7 +15,12 @@ const formatAddress = (address: string) => {
   )}`;
 };
 
-export function ConnectSmartAccount() {
+interface ConnectSmartAccountProps {
+  onConnected: (address: string) => void;
+  onDisconnected: () => void;
+}
+
+export function ConnectSmartAccount({ onConnected, onDisconnected }: ConnectSmartAccountProps) {
   const [eoa, setEoa] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,6 +31,7 @@ export function ConnectSmartAccount() {
     try {
       const { eoa } = await connectAndGetSmartAccount();
       setEoa(eoa);
+      onConnected(eoa);
     } catch (e: any) {
       console.error('Connection failed:', e);
       setError(e.message || 'Failed to connect. Please try again.');
@@ -38,6 +44,7 @@ export function ConnectSmartAccount() {
     disconnect();
     setEoa(null);
     setError(null);
+    onDisconnected();
   }
 
   if (eoa) {
