@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useWeb3ModalAccount } from '@web3modal/ethers/react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import PortfolioCard from '@/components/PortfolioCard';
 import TransactionsList from '@/components/TransactionsList';
@@ -11,19 +10,20 @@ import {
   Activity,
   DollarSign,
   Droplets,
+  Zap
 } from 'lucide-react';
 import type { PortfolioSummary, Transaction } from '@/lib/types';
 import { getPortfolioSummary, getRecentTransactions } from '@/lib/envio';
-import { sendTransaction } from '@/lib/smartAccount'; // This will be unused for now
 import { Skeleton } from '@/components/ui/skeleton';
-import { ConnectWallet } from '@/components/ConnectWallet';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
-function Dashboard({ address }: { address: string }) {
+function Dashboard({ address }: { address: `0x${string}` }) {
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useState(() => {
+  useEffect(() => {
     async function fetchData() {
       if (address) {
         setLoading(true);
@@ -37,7 +37,7 @@ function Dashboard({ address }: { address: string }) {
       }
     }
     fetchData();
-  });
+  }, [address]);
 
   return (
      <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 w-full max-w-7xl mx-auto">
@@ -92,13 +92,11 @@ function Dashboard({ address }: { address: string }) {
 
 
 export default function Home() {
-  const { address, isConnected } = useWeb3ModalAccount();
+  const { address, isConnected } = useAccount();
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <Header>
-        <ConnectWallet />
-      </Header>
+      <Header />
       <main className="flex flex-1 flex-col items-center justify-center p-4">
         {isConnected && address ? (
           <Dashboard address={address} />
@@ -111,7 +109,7 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-lg text-muted-foreground mb-8">
                 Connect your wallet to get AI-powered insights into your portfolio, transactions, and spending patterns on the Monad testnet.
               </p>
-               <ConnectWallet />
+               <ConnectButton />
           </div>
         )}
       </main>

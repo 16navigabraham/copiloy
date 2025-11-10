@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
-export default function Header({ children }: { children?: ReactNode }) {
+export default function Header() {
+  const { isConnected } = useAccount();
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -12,7 +14,7 @@ export default function Header({ children }: { children?: ReactNode }) {
           </div>
           <span className="font-bold text-xl font-headline">Portfolio Copilot</span>
         </Link>
-        <div>{children}</div>
+        <div>{isConnected && <ConnectButton />}</div>
       </div>
     </header>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { modal } from '@/lib/smartAccount'; // Eagerly initialize the modal
+import { RainbowKitAppProvider } from '@/lib/rainbowkit';
 
 export const metadata: Metadata = {
   title: 'Portfolio Copilot',
@@ -37,7 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased')}>
-        {children}
+        <RainbowKitAppProvider>{children}</RainbowKitAppProvider>
         <Toaster />
       </body>
     </html>
