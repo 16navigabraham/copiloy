@@ -17,10 +17,10 @@ export const monad = defineChain({
   },
 });
 
-export const projectId = 'YOUR_PROJECT_ID';
+export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 if (!projectId) {
-  throw new Error('Project ID is not defined');
+  throw new Error('Project ID is not defined in .env file');
 }
 
 export const networks = [monad];
