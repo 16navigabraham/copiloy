@@ -16,7 +16,7 @@ if (!projectId) {
 const metadata = {
   name: 'Portfolio Copilot',
   description: 'AI-powered Web3 portfolio analysis on Monad testnet.',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'https://6000-firebase-studio-1759845892750.cluster-ikslh4rdsnbqsvu5nw3v4dqjj2.cloudworkstations.dev', // origin must match your domain & subdomain
+  url: 'https://portfolio-copilot.app', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
