@@ -117,7 +117,6 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-lg text-muted-foreground mb-8">
                 Connect your wallet to get AI-powered insights into your portfolio, transactions, and spending patterns on the Monad testnet.
               </p>
-               <reown-appkit-button />
           </div>
         )}
       </main>
