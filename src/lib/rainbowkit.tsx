@@ -30,7 +30,7 @@ export const monad = defineChain({
 
 const config = getDefaultConfig({
   appName: 'Portfolio Copilot',
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+  projectId: 'YOUR_PROJECT_ID',
   chains: [monad],
   ssr: true, 
 });
