@@ -10,7 +10,6 @@ import {
   Activity,
   DollarSign,
   Droplets,
-  Zap
 } from 'lucide-react';
 import type { PortfolioSummary, Transaction } from '@/lib/types';
 import { getPortfolioSummary, getRecentTransactions } from '@/lib/envio';
@@ -83,7 +82,7 @@ function Dashboard({ address }: { address: `0x${string}` }) {
           <TransactionsList transactions={transactions} loading={loading} />
         </div>
         <div className="lg:col-span-2">
-          {address && <AIChat address={address} onExecuteAction={async (to, amount) => { console.log('Send tx not implemented'); return null; }} />}
+          {address && <AIChat address={address} />}
         </div>
       </div>
     </div>
