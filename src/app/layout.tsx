@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { RainbowKitAppProvider } from '@/lib/rainbowkit';
+import AppKitProvider from '@/lib/appkit-provider';
 
 export const metadata: Metadata = {
   title: 'Portfolio Copilot',
@@ -37,7 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased')}>
-        <RainbowKitAppProvider>{children}</RainbowKitAppProvider>
+        <AppKitProvider>{children}</AppKitProvider>
         <Toaster />
       </body>
     </html>

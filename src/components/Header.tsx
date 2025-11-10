@@ -1,7 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'reown-appkit-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
 
 export default function Header() {
   const { isConnected } = useAccount();
@@ -14,7 +23,7 @@ export default function Header() {
           </div>
           <span className="font-bold text-xl font-headline">Portfolio Copilot</span>
         </Link>
-        <div>{isConnected && <ConnectButton />}</div>
+        <div>{isConnected && <reown-appkit-button />}</div>
       </div>
     </header>
   );

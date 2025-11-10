@@ -14,8 +14,17 @@ import {
 import type { PortfolioSummary, Transaction } from '@/lib/types';
 import { getPortfolioSummary, getRecentTransactions } from '@/lib/envio';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
+
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'reown-appkit-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
+
 
 function Dashboard({ address }: { address: `0x${string}` }) {
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
@@ -108,7 +117,7 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-lg text-muted-foreground mb-8">
                 Connect your wallet to get AI-powered insights into your portfolio, transactions, and spending patterns on the Monad testnet.
               </p>
-               <ConnectButton />
+               <reown-appkit-button />
           </div>
         )}
       </main>

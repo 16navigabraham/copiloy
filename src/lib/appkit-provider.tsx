@@ -1,0 +1,42 @@
+'use client';
+
+import { wagmiAdapter, projectId, networks } from '@/lib/appkit-config';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createAppKit } from '@reown/appkit/react';
+import React, { type ReactNode } from 'react';
+import { WagmiProvider, type Config } from 'wagmi';
+
+const queryClient = new QueryClient();
+
+if (!projectId) {
+  throw new Error('Project ID is not defined');
+}
+
+const metadata = {
+  name: 'Portfolio Copilot',
+  description: 'AI-powered Web3 portfolio analysis on Monad testnet.',
+  url: 'https://web.app', // origin must match your domain & subdomain
+  icons: ['https://avatars.githubusercontent.com/u/37784886'],
+};
+
+createAppKit({
+  adapters: [wagmiAdapter],
+  projectId,
+  networks,
+  defaultNetwork: networks[0],
+  metadata: metadata,
+});
+
+function AppKitProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as Config}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+
+export default AppKitProvider;
