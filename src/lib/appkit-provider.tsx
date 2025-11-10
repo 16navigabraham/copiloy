@@ -12,6 +12,7 @@ if (!projectId) {
   throw new Error('Project ID is not defined');
 }
 
+// Set up metadata
 const metadata = {
   name: 'Portfolio Copilot',
   description: 'AI-powered Web3 portfolio analysis on Monad testnet.',
@@ -19,6 +20,7 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
+// Create the modal at the module level to ensure web components are registered
 createAppKit({
   adapters: [wagmiAdapter],
   projectId,
