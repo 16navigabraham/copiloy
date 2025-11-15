@@ -19,9 +19,10 @@ export const monad = defineChain({
 
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
-if (!projectId) {
-  throw new Error('Project ID is not defined in .env file. Please set NEXT_PUBLIC_PROJECT_ID');
+if (!projectId || projectId === 'REPLACE_WITH_YOUR_PROJECT_ID') {
+  console.warn(`[AppKit] Project ID is not defined or is a placeholder. Please set NEXT_PUBLIC_PROJECT_ID in your .env file. You can get a project ID from https://dashboard.reown.com`);
 }
+
 
 export const networks = [monad];
 
